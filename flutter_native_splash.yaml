@@ -1,0 +1,15 @@
+flutter_native_splash:
+  # 스플래시 화면에 사용할 배경색
+  color: "#FFFFFF" 
+  
+  # 스플래시 화면 중앙 이미지
+  image: assets/logo.png
+
+  # 안드로이드 12 이상을 위한 설정?
+  android_12:
+    color: "#FFFFFF"
+    image: assets/logo.png
+  
+  # 다크 모드일 때 설정
+  # color_dark: "#000000"
+  # image_dark: assets/splash_dark.png
