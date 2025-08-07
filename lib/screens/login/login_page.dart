@@ -1,27 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../chat/chat_page.dart';
 import '../../models/user_state.dart';
 import '../../utils/app_theme.dart';
+import '../../utils/geolocator_helper.dart';
+import '../../view_model/login_view_model.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class LoginPage extends ConsumerWidget {
+  LoginPage({super.key});
 
-  @override
-  State<LoginPage> createState() => _LoginPageState();
-}
-
-class _LoginPageState extends State<LoginPage> {
   final TextEditingController _senderController = TextEditingController();
-  String locationAddress = ''; // 위치 주소 변수
 
-  @override
-  void dispose() {
-    _senderController.dispose();
-    super.dispose();
+  // 위치 정보 가져오기 메소드
+  Future<void> _getLocationAddress(WidgetRef ref) async {
+      // 현재 위치 가져오기
+      final position = await GeolocatorHelper.getPositon();
+      if (position != null) {
+        // 좌표로 주소 검색
+        await ref
+            .read(loginViewModel.notifier)
+            .searchByAddress(position.latitude, position.longitude);
+      }
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locationAddress = ref.watch(loginViewModel);
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -103,7 +108,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 child: TextButton(
                   onPressed: () {
-                    //[TODO] 위치 정보 가져오기 로직 추가 필요
+                    _getLocationAddress(ref);
                   },
                   style: TextButton.styleFrom(
                     padding: EdgeInsets.zero,
@@ -122,7 +127,9 @@ class _LoginPageState extends State<LoginPage> {
             Align(
               alignment: Alignment.centerRight,
               child: Text(
-                locationAddress.isEmpty ? '위치 정보 가져오기를 눌러주세요' : locationAddress,
+                locationAddress.isEmpty
+                    ? '위치 정보 가져오기를 눌러주세요'
+                    : locationAddress[0],
                 style: locationAddress.isEmpty
                     ? AppTextStyles.greyText18
                     : AppTextStyles.brownText18,
@@ -139,11 +146,26 @@ class _LoginPageState extends State<LoginPage> {
               ),
               child: ElevatedButton(
                 onPressed: () {
+                  if (_senderController.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('닉네임을 입력해주세요'),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ChatPage(
-                        userState: UserState(sender: _senderController.text),
+                        userState: UserState(
+                          address: locationAddress[0],
+                          sender: _senderController.text.trim(),
+                          senderId: '',
+                          profileImgUrl: '',
+                        ),
                       ),
                     ),
                   );
