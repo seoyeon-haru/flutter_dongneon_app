@@ -66,6 +66,13 @@ class AppTextStyles {
     fontWeight: FontWeight.normal,
   );
 
+  static const TextStyle greyText18 = TextStyle(
+    fontFamily: 'Jua',
+    fontSize: 18,
+    color: AppColors.grey,
+    fontWeight: FontWeight.normal,
+  );
+
   static const TextStyle title = TextStyle(
     fontFamily: 'Jua',
     fontSize: 24,
