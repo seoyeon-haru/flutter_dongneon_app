@@ -1,50 +1,34 @@
 import 'package:flutter/material.dart';
+import 'package:project03/utils/app_theme.dart';
 
-class ChatSendmsg extends StatelessWidget {
+class ChatSendMsg extends StatelessWidget {
+  ChatSendMsg({
+    required this.name,
+    required this.content,
+    required this.dateTime,
+  });
+  final String name;
+  final String content;
+  final DateTime dateTime;
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              '이샘',
-              style: TextStyle(fontSize: 15),
-            ),
-            Container(
-              width: 100,
-              height: 30,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(10),
-                color: Color(0xFFFFEBB0),
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Text('안녕하세요'),
-                ],
-              ),
-            ),
-            Text('25.08.07 11:00', style: TextStyle(color: Colors.grey)),
-          ],
-        ),
-        SizedBox(width: 10),
+        Text(name),
         Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.grey[300],
-          ),
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              Icon(Icons.person),
-            ],
-          ),
-        ),
+            decoration: BoxDecoration(
+                color: AppColors.secondary,
+                borderRadius: BorderRadius.circular(16)),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              content,
+              style: AppTextStyles.body.copyWith(fontSize: 15),
+            )),
+        Text(
+          dateTime.toIso8601String(),
+          style: AppTextStyles.placeHolderText,
+        )
       ],
     );
   }
