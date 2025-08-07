@@ -139,11 +139,22 @@ class _LoginPageState extends State<LoginPage> {
               ),
               child: ElevatedButton(
                 onPressed: () {
+                  if (_senderController.text.trim().isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('닉네임을 입력해주세요'),
+                        backgroundColor: Colors.red,
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                    return;
+                  }
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => ChatPage(
-                        userState: UserState(sender: _senderController.text),
+                        userState:
+                            UserState(sender: _senderController.text.trim()),
                       ),
                     ),
                   );
