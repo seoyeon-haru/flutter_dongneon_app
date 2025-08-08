@@ -1,10 +1,15 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../chat/chat_page.dart';
 import '../../models/user_state.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/geolocator_helper.dart';
 import '../../view_model/login_view_model.dart';
+
+final selectedImageProvider = StateProvider<File?>((ref) => null);
 
 class LoginPage extends ConsumerWidget {
   LoginPage({super.key});
@@ -26,6 +31,7 @@ class LoginPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locationAddress = ref.watch(loginViewModel);
+    final selectedImage = ref.watch(selectedImageProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -57,15 +63,30 @@ class LoginPage extends ConsumerWidget {
             children: [
               const SizedBox(height: 88),
               GestureDetector(
-                onTap: () {
-                  //[TODO] 프로필 이미지 선택 로직 추가 필요 : 동동동세진님
+                onTap: () async {
+                  final image = await ImagePicker()
+                      .pickImage(source: ImageSource.gallery);
+
+                  if (image != null) {
+                    ref.read(selectedImageProvider.notifier).state =
+                        File(image.path);
+                  }
                 },
                 child: SizedBox(
                   width: 116,
                   height: 116,
-                  child: Image.asset(
-                    'assets/ic_person.png',
-                  ),
+                  child: selectedImage != null
+                      ? ClipOval(
+                          child: Image.file(
+                            selectedImage, // 바로 여기서 사용됩니다!
+                            width: 116,
+                            height: 116,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Image.asset(
+                          'assets/ic_person.png',
+                        ),
                 ),
               ),
               const SizedBox(height: 35),
