@@ -206,8 +206,7 @@ class LoginPage extends ConsumerWidget {
                               ref.read(userProfileViewModelProvider);
 
                           if (context.mounted) {
-                            // 로그인 후 다시 로그인 화면으로 돌아오지 않도록 pushReplacement 사용
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
                               MaterialPageRoute(
                                 // 가져온 사용자 정보를 ChatPage의 생성자로 전달
