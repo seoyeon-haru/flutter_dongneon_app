@@ -1,6 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:project03/firebase_options.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'screens/login/login_page.dart';
 
 void main() async {
@@ -9,7 +10,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-void main() {
   runApp(ProviderScope(child: MyApp()));
 }
 
