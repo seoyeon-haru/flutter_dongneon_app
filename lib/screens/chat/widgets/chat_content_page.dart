@@ -41,18 +41,26 @@ class ChatContentPage extends StatelessWidget {
         // 프로필을 표시할지 결정하는 로직
         // - 이전 메시지가 없거나,
         // - 이전 메시지를 보낸 사람과 다르거나,
-        // - 이전 메시지와 보낸 시간이 1분 이상 차이 날 때
+        // - 이전 메시지와 보낸 '시:분'이 다를 때
         final bool showProfile = prevChat == null ||
             prevChat.senderId != chat.senderId ||
-            chat.timestamp.difference(prevChat.timestamp).inMinutes >= 1;
+            !(prevChat.timestamp.year == chat.timestamp.year &&
+                prevChat.timestamp.month == chat.timestamp.month &&
+                prevChat.timestamp.day == chat.timestamp.day &&
+                prevChat.timestamp.hour == chat.timestamp.hour &&
+                prevChat.timestamp.minute == chat.timestamp.minute);
 
         // 시간을 표시할지 결정하는 로직
         // - 다음 메시지가 없거나,
         // - 다음 메시지를 보낸 사람과 다르거나,
-        // - 다음 메시지와 보낸 시간이 1분 이상 차이 날 때
+        // - 다음 메시지와 보낸 '시:분'이 다를 때
         final bool showTimestamp = nextChat == null ||
             nextChat.senderId != chat.senderId ||
-            nextChat.timestamp.difference(chat.timestamp).inMinutes >= 1;
+            !(nextChat.timestamp.year == chat.timestamp.year &&
+                nextChat.timestamp.month == chat.timestamp.month &&
+                nextChat.timestamp.day == chat.timestamp.day &&
+                nextChat.timestamp.hour == chat.timestamp.hour &&
+                nextChat.timestamp.minute == chat.timestamp.minute);
 
         if (isMe) {
           return ChatSendMsg(
