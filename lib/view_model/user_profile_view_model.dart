@@ -18,18 +18,18 @@ class UserProfileViewModel extends Notifier<UserState> {
     File? profileImage,
   }) async {
     final storageRepository = ref.read(storageRepositoryProvider);
-    String profileImageUrl = '';
+    String? profileImageUrl;
     final userId = const Uuid().v4(); // 사용자별 고유 ID 생성
 
     if (profileImage != null) {
-      // 이미지가 있으면 Storage에 업로드하고 URL을 받아옵니다.
+      // 이미지가 있으면 Storage에 업로드하고 URL을 받아옴
       profileImageUrl = await storageRepository.uploadProfileImage(
         image: profileImage,
         userId: userId,
       );
     }
 
-    // Riverpod이 상태 변화를 감지하도록 새로운 UserState 객체를 생성하여 할당합니다.
+    // Riverpod이 상태 변화를 감지하도록 새로운 UserState 객체를 생성하여 할당
     state = UserState(
       sender: nickname,
       address: address,
