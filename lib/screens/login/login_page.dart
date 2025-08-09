@@ -1,10 +1,17 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../chat/chat_page.dart';
-import '../../models/user_state.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/geolocator_helper.dart';
 import '../../view_model/login_view_model.dart';
+import '../../view_model/user_profile_view_model.dart';
+
+// 시작하기 버튼의 로딩 상태를 관리
+final selectedImageProvider = StateProvider<File?>((ref) => null);
+final loginLoadingProvider = StateProvider<bool>((ref) => false);
 
 class LoginPage extends ConsumerWidget {
   LoginPage({super.key});
@@ -26,6 +33,8 @@ class LoginPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locationAddress = ref.watch(loginViewModel);
+    final selectedImage = ref.watch(selectedImageProvider);
+    final isLoading = ref.watch(loginLoadingProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -57,15 +66,30 @@ class LoginPage extends ConsumerWidget {
             children: [
               const SizedBox(height: 88),
               GestureDetector(
-                onTap: () {
-                  //[TODO] 프로필 이미지 선택 로직 추가 필요 : 동동동세진님
+                onTap: () async {
+                  final image = await ImagePicker()
+                      .pickImage(source: ImageSource.gallery);
+
+                  if (image != null) {
+                    ref.read(selectedImageProvider.notifier).state =
+                        File(image.path);
+                  }
                 },
                 child: SizedBox(
                   width: 116,
                   height: 116,
-                  child: Image.asset(
-                    'assets/ic_person.png',
-                  ),
+                  child: selectedImage != null
+                      ? ClipOval(
+                          child: Image.file(
+                            selectedImage,
+                            width: 116,
+                            height: 116,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Image.asset(
+                          'assets/ic_person.png',
+                        ),
                 ),
               ),
               const SizedBox(height: 35),
@@ -146,33 +170,52 @@ class LoginPage extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: ElevatedButton(
-                  onPressed: () {
-                    if (_senderController.text.trim().isEmpty) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('닉네임을 입력해주세요'),
-                          backgroundColor: Colors.red,
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
-                      return;
-                    }
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ChatPage(
-                          userState: UserState(
-                            address: locationAddress.isNotEmpty
-                                ? locationAddress[0]
-                                : '',
-                            sender: _senderController.text.trim(),
-                            senderId: '',
-                            profileImgUrl: '',
-                          ),
-                        ),
-                      ),
-                    );
-                  },
+                  onPressed: isLoading
+                      ? null
+                      : () async {
+                          final nickname = _senderController.text.trim();
+                          if (nickname.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('닉네임을 입력해주세요'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+
+                          // 로딩 시작
+                          ref.read(loginLoadingProvider.notifier).state = true;
+
+                          // ViewModel의 login 메서드 호출
+                          await ref
+                              .read(userProfileViewModelProvider.notifier)
+                              .login(
+                                nickname: nickname,
+                                address: locationAddress.isNotEmpty
+                                    ? locationAddress[0]
+                                    : '',
+                                profileImage: selectedImage,
+                              );
+
+                          // 로딩 종료
+                          ref.read(loginLoadingProvider.notifier).state = false;
+
+                          // ViewModel에서 업데이트된 최신 사용자 정보를 가져오기
+                          final userState =
+                              ref.read(userProfileViewModelProvider);
+
+                          if (context.mounted) {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                // 가져온 사용자 정보를 ChatPage의 생성자로 전달
+                                builder: (context) =>
+                                    ChatPage(userState: userState),
+                              ),
+                            );
+                          }
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.secondary,
                     foregroundColor: AppColors.black,
@@ -182,10 +225,12 @@ class LoginPage extends ConsumerWidget {
                       borderRadius: BorderRadius.circular(20),
                     ),
                   ),
-                  child: const Text(
-                    '시작하기',
-                    style: AppTextStyles.tealText20,
-                  ),
+                  child: isLoading
+                      ? const CircularProgressIndicator(
+                          valueColor:
+                              AlwaysStoppedAnimation<Color>(Colors.white),
+                        )
+                      : const Text('시작하기', style: AppTextStyles.tealText20),
                 ),
               ),
               const SizedBox(height: 40),
