@@ -21,6 +21,7 @@ class ChatPage extends ConsumerWidget {
       },
       child: Scaffold(
         appBar: AppBar(
+          backgroundColor: AppColors.white,
           centerTitle: false,
           // Use the user's address from the state
           title: Text(userState.address, style: AppTextStyles.title),

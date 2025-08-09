@@ -34,7 +34,10 @@ class _ChatBottomSheetState extends ConsumerState<ChatBottomSheet> {
     return Container(
       padding: EdgeInsets.fromLTRB(20, 10, 20, 10 + widget.bottomPadding),
       decoration: const BoxDecoration(
-        color: Colors.white,
+        color: AppColors.secondary,
+        border: Border(
+          top: BorderSide(color: AppColors.primary, width: 1.0),
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black12,
@@ -49,15 +52,14 @@ class _ChatBottomSheetState extends ConsumerState<ChatBottomSheet> {
             child: TextField(
               controller: _controller,
               decoration: InputDecoration(
-                hintText: '메시지를 입력하세요',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(25.0),
-                  borderSide: BorderSide.none,
-                ),
-                filled: true,
-                fillColor: Colors.grey[200],
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20),
-              ),
+                  hintText: '내용을 입력해 주세요...',
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: const BorderSide(color: AppColors.primary)),
+                  filled: true,
+                  fillColor: Colors.white,
+                  // contentPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 20)),
               onSubmitted: (value) => _sendMessage(),
             ),
           ),
@@ -65,7 +67,7 @@ class _ChatBottomSheetState extends ConsumerState<ChatBottomSheet> {
           IconButton(
             icon: const Icon(Icons.send),
             onPressed: _sendMessage,
-            color: AppColors.secondary,
+            color: AppColors.primary,
           ),
         ],
       ),

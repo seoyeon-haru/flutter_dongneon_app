@@ -26,29 +26,48 @@ class ChatContentPage extends StatelessWidget {
     return ListView.separated(
       controller: scrollController,
       // 하단 입력창에 가려지지 않도록 아래쪽에 여백 추가
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 90),
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 120),
       itemCount: chats.length,
       separatorBuilder: (context, index) => const SizedBox(height: 10),
       itemBuilder: (context, index) {
         final chat = chats[index];
         final isMe = chat.senderId == currentUserId;
 
+        // 이전 메시지와 다음 메시지 정보 가져오기
+        final Chat? prevChat = index > 0 ? chats[index - 1] : null;
+        final Chat? nextChat =
+            index < chats.length - 1 ? chats[index + 1] : null;
+
+        // 프로필을 표시할지 결정하는 로직
+        // - 이전 메시지가 없거나,
+        // - 이전 메시지를 보낸 사람과 다르거나,
+        // - 이전 메시지와 보낸 시간이 1분 이상 차이 날 때
+        final bool showProfile = prevChat == null ||
+            prevChat.senderId != chat.senderId ||
+            chat.timestamp.difference(prevChat.timestamp).inMinutes >= 1;
+
+        // 시간을 표시할지 결정하는 로직
+        // - 다음 메시지가 없거나,
+        // - 다음 메시지를 보낸 사람과 다르거나,
+        // - 다음 메시지와 보낸 시간이 1분 이상 차이 날 때
+        final bool showTimestamp = nextChat == null ||
+            nextChat.senderId != chat.senderId ||
+            nextChat.timestamp.difference(chat.timestamp).inMinutes >= 1;
+
         if (isMe) {
           return ChatSendMsg(
-            name: chat.sender,
             content: chat.message,
             dateTime: chat.timestamp,
+            showTimestamp: showTimestamp,
           );
         } else {
-          // 같은 사람이 보낸 연속된 메시지에서는 프로필을 한 번만 보여주기 위한 로직
-          final bool showProfile =
-              index == 0 || chats[index - 1].senderId != chat.senderId;
           return ChatGetMsg(
-            imgUrl: chat.profileImgUrl ?? '', // 프로필 이미지가 없으면 빈 문자열 전달
+            imgUrl: chat.profileImgUrl ?? '',
             showProfile: showProfile,
             name: chat.sender,
             content: chat.message,
             dateTime: chat.timestamp,
+            showTimestamp: showTimestamp,
           );
         }
       },
