@@ -173,11 +173,22 @@ class LoginPage extends ConsumerWidget {
                   onPressed: isLoading
                       ? null
                       : () async {
+                          // 닉네임 널처리
                           final nickname = _senderController.text.trim();
                           if (nickname.isEmpty) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('닉네임을 입력해주세요'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                            return;
+                          }
+                          // 위치정보 널처리
+                          if (locationAddress.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('위치 정보를 가져와주세요'),
                                 backgroundColor: Colors.red,
                               ),
                             );
