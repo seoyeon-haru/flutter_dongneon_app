@@ -27,7 +27,8 @@ class ChatPage extends ConsumerWidget {
           title: Text(userState.address, style: AppTextStyles.title),
         ),
         bottomSheet: ChatBottomSheet(
-          MediaQuery.of(context).padding.bottom,
+          bottomPadding: MediaQuery.of(context).padding.bottom,
+          userState: userState,
         ),
         body: Column(
           children: [

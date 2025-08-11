@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:project03/models/user_state.dart';
 import 'package:project03/utils/app_theme.dart';
 import 'package:project03/view_model/chat_view_model.dart';
 
 class ChatBottomSheet extends ConsumerStatefulWidget {
   final double bottomPadding;
-  const ChatBottomSheet(this.bottomPadding, {super.key});
+  final UserState userState;
+
+  const ChatBottomSheet({
+    super.key,
+    required this.bottomPadding,
+    required this.userState,
+  });
 
   @override
   ConsumerState<ChatBottomSheet> createState() => _ChatBottomSheetState();
@@ -13,20 +20,27 @@ class ChatBottomSheet extends ConsumerStatefulWidget {
 
 class _ChatBottomSheetState extends ConsumerState<ChatBottomSheet> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   void _sendMessage() {
-    // ViewModel을 통해 메시지 전송
-    ref.read(chatViewModelProvider.notifier).sendMessage(_controller.text);
-    // 입력창 비우기
-    _controller.clear();
-    // 키보드 내리기
-    FocusScope.of(context).unfocus();
+    final message = _controller.text.trim();
+    if (message.isNotEmpty) {
+      // ViewModel을 통해 메시지와 사용자 정보 전송
+      ref.read(chatViewModelProvider.notifier).sendMessage(
+            message: message,
+            userState: widget.userState,
+          );
+      _controller.clear();
+      // 메시지 전송 후에도 포커스를 유지하여 연속적인 입력이 가능
+      _focusNode.requestFocus();
+    }
   }
 
   @override
@@ -51,6 +65,8 @@ class _ChatBottomSheetState extends ConsumerState<ChatBottomSheet> {
           Expanded(
             child: TextField(
               controller: _controller,
+              focusNode: _focusNode,
+              autofocus: true,
               decoration: InputDecoration(
                   hintText: '내용을 입력해 주세요...',
                   border: OutlineInputBorder(
@@ -60,7 +76,7 @@ class _ChatBottomSheetState extends ConsumerState<ChatBottomSheet> {
                   fillColor: Colors.white,
                   // contentPadding: const EdgeInsets.symmetric(horizontal: 20),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20)),
-              onSubmitted: (value) => _sendMessage(),
+              onSubmitted: (_) => _sendMessage(),
             ),
           ),
           const SizedBox(width: 10),

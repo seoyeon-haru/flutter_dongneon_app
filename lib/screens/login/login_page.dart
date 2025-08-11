@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:project03/services/user_service.dart';
 import '../chat/chat_page.dart';
 import '../../utils/app_theme.dart';
 import '../../utils/geolocator_helper.dart';
@@ -16,6 +17,7 @@ final loginLoadingProvider = StateProvider<bool>((ref) => false);
 class LoginPage extends ConsumerWidget {
   LoginPage({super.key});
 
+  final _userService = UserService();
   final TextEditingController _senderController = TextEditingController();
 
   // 위치 정보 가져오기 메소드
@@ -198,7 +200,7 @@ class LoginPage extends ConsumerWidget {
                           // 로딩 시작
                           ref.read(loginLoadingProvider.notifier).state = true;
 
-                          // ViewModel의 login 메서드 호출
+                          // 1. 기존 ViewModel을 호출하여 프로필 이미지 업로드 등 선행 작업을 처리합니다.
                           await ref
                               .read(userProfileViewModelProvider.notifier)
                               .login(
@@ -209,20 +211,29 @@ class LoginPage extends ConsumerWidget {
                                 profileImage: selectedImage,
                               );
 
-                          // 로딩 종료
-                          ref.read(loginLoadingProvider.notifier).state = false;
-
-                          // ViewModel에서 업데이트된 최신 사용자 정보를 가져오기
-                          final userState =
+                          // 2. ViewModel에서 업데이트된 사용자 정보(특히 업로드된 이미지 URL)를 가져옵니다.
+                          final initialUserState =
                               ref.read(userProfileViewModelProvider);
+
+                          // 3. UserService를 사용하여 기기에 저장된 영속적인 senderId를 가진
+                          //    최종 UserState 객체를 생성합니다.
+                          final finalUserState =
+                              await _userService.getOrCreateUser(
+                            nickname: initialUserState.sender,
+                            address: initialUserState.address,
+                            profileImgUrl: initialUserState.profileImgUrl,
+                          );
+
+                          ref.read(loginLoadingProvider.notifier).state =
+                              false; // 로딩 종료
 
                           if (context.mounted) {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                // 가져온 사용자 정보를 ChatPage의 생성자로 전달
+                                // 4. 최종 사용자 정보를 ChatPage로 전달합니다.
                                 builder: (context) =>
-                                    ChatPage(userState: userState),
+                                    ChatPage(userState: finalUserState),
                               ),
                             );
                           }
