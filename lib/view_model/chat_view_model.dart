@@ -1,48 +1,48 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:project03/models/chat_model.dart';
 import 'package:project03/models/user_state.dart';
 import 'package:project03/repositorys/chat_repository.dart';
-import 'package:project03/view_model/user_profile_view_model.dart';
-import 'package:uuid/uuid.dart';
 
-// Provider to get the real-time stream of chat messages
+/// ChatRepository 인스턴스를 제공하는 Provider
+final chatRepositoryProvider = Provider((ref) => ChatRepository());
+
+/// 채팅 목록을 실시간으로 제공하는 StreamProvider
+/// chat_page.dart에서 이 provider를 watch하여 UI를 업데이트
 final chatStreamProvider = StreamProvider.autoDispose<List<Chat>>((ref) {
-  final chatRepository = ref.watch(chatRepositoryProvider);
-  return chatRepository.getChatStream();
+  final repository = ref.watch(chatRepositoryProvider);
+  return repository.getChatsStream();
 });
 
-// ViewModel to handle chat-related actions, like sending a message
+/// 채팅 관련 비즈니스 로직을 처리하는 ViewModel
+final chatViewModelProvider =
+    NotifierProvider<ChatViewModel, void>(ChatViewModel.new);
+
 class ChatViewModel extends Notifier<void> {
   @override
-  void build() {
-    // No initial state needed for an action-only notifier
-  }
+  void build() {}
 
-  Future<void> sendMessage(String message) async {
+  /// 메시지를 Firestore에 전송하는 함수
+  Future<void> sendMessage({
+    required String message,
+    required UserState userState,
+  }) async {
     final chatRepository = ref.read(chatRepositoryProvider);
-    // Get the current user's data from the UserProfileViewModel
-    final UserState currentUser = ref.read(userProfileViewModelProvider);
 
-    // Prevent sending empty messages
-    if (message.trim().isEmpty) {
-      return;
-    }
+    // Firestore에서 고유한 문서 ID를 미리 생성
+    final messageId = FirebaseFirestore.instance.collection('chats').doc().id;
 
-    // Create a new Chat object
+    // 전달받은 정보와 Chat 모델을 사용하여 새로운 Chat 객체를 생성
     final newChat = Chat(
-      messageId: const Uuid().v4(),
-      senderId: currentUser.senderId,
-      sender: currentUser.sender,
-      message: message.trim(),
-      profileImgUrl: currentUser.profileImgUrl,
+      messageId: messageId,
+      senderId: userState.senderId,
+      sender: userState.sender,
+      message: message,
+      profileImgUrl: userState.profileImgUrl,
       timestamp: DateTime.now(),
     );
 
-    // Use the repository to send the message to Firestore
-    await chatRepository.sendMessage(newChat);
+    // Repository를 통해 Firestore에 데이터를 추가
+    await chatRepository.addMessage(newChat);
   }
 }
-
-final chatViewModelProvider = NotifierProvider<ChatViewModel, void>(
-  () => ChatViewModel(),
-);
