@@ -17,7 +17,9 @@
   <img src="docs/4.png" width="100"/>
 </p>
 
-**[시연영상]** https
+<p align="center">
+[시연영상] https://www.youtube.com/shorts/_STrBwb0l3U
+</p>
 
 ---
 
