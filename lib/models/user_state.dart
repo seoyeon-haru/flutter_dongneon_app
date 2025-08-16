@@ -2,13 +2,13 @@ class UserState {
   String address;
   String sender;
   String senderId;
-  String profileImgUrl;
+  String? profileImgUrl;
 
   UserState({
     this.address = '',
     this.sender = '',
     this.senderId = '',
-    this.profileImgUrl = '',
+    this.profileImgUrl,
   });
 }
 
